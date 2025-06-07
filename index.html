@@ -1116,15 +1116,67 @@
     saveBtn.addEventListener('click', autoSaveTable);
     btnEdit.addEventListener('click', autoSaveTable);
     btnSave.addEventListener('click', autoSaveTable);
-    btnClear.addEventListener('click', function() {
-      localStorage.removeItem(STORAGE_KEY);
-    });
-
-    // Also auto-save after table is edited (when editing is finished)
+    btnClear.addEventListener('click', updateWorkDropdownLock);
     tableBody.addEventListener('input', autoSaveTable);
 
     // Load table data on page load
     loadTableDataFromStorage();
+
+    // --- LOCK WORK DROPDOWN IF A WORK IS STARTED AND NOT ENDED ---
+
+    // Helper: find active started work (not ended)
+    function getActiveStartedWork() {
+      const rows = Array.from(tableBody.querySelectorAll('tr'));
+      const lastStatusByWork = {};
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 5) {
+          const work = cells[3].textContent;
+          const status = cells[4].textContent;
+          lastStatusByWork[work] = status;
+        }
+      });
+      // Find a work whose last status is "Start"
+      for (const [work, status] of Object.entries(lastStatusByWork)) {
+        if (status === 'Start') return work;
+      }
+      return null;
+    }
+
+    // Lock/unlock the work dropdown based on active started work
+    function updateWorkDropdownLock() {
+      const activeWork = getActiveStartedWork();
+      if (activeWork) {
+        // Only allow selecting the active work, disable others
+        Array.from(workSelect.options).forEach(opt => {
+          if (opt.value === activeWork) {
+            opt.disabled = false;
+            opt.selected = true;
+          } else {
+            opt.disabled = true;
+          }
+        });
+        workSelect.classList.add('opacity-60', 'pointer-events-none');
+        workSelect.setAttribute('aria-disabled', 'true');
+      } else {
+        // Enable all options
+        Array.from(workSelect.options).forEach(opt => {
+          opt.disabled = false;
+        });
+        workSelect.classList.remove('opacity-60', 'pointer-events-none');
+        workSelect.removeAttribute('aria-disabled');
+      }
+    }
+
+    // Call on page load and after every table change
+    updateWorkDropdownLock();
+
+    // Also call after saving, editing, clearing, or input changes
+    saveBtn.addEventListener('click', updateWorkDropdownLock);
+    btnEdit.addEventListener('click', updateWorkDropdownLock);
+    btnSave.addEventListener('click', updateWorkDropdownLock);
+    btnClear.addEventListener('click', updateWorkDropdownLock);
+    tableBody.addEventListener('input', updateWorkDropdownLock);
   });
 </script>
 
