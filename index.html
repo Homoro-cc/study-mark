@@ -1,0 +1,1132 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Light Dark Background Layout with Save to Table and Notification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    /* Custom border radius for all boxes */
+    .rounded-box {
+      border-radius: 0.75rem; /* 12px */
+    }
+    /* Table borders 1px black */
+    table, th, td {
+      border: 1px solid black;
+    }
+    /* Table header style */
+    thead th {
+      background-color: black;
+      color: white;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    /* Remove borders for divt-l table */
+    #divt-l table, #divt-l th, #divt-l td {
+      border: none;
+    }
+    /* Ribbon styling */
+    .ribbon {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 100%;
+      background-color: #2563eb; /* Tailwind blue-600 */
+      border-radius: 0;
+      clip-path: none;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; /* icon at top */
+      padding-top: 12px;
+      padding-bottom: 0;
+      box-sizing: border-box;
+      overflow: visible;
+    }
+    /* Remove clip-path to make full ribbon blue */
+    .ribbon::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 100%;
+      background-color: #2563eb;
+      z-index: -1;
+      clip-path: none;
+    }
+    /* User icon container in ribbon */
+    .ribbon-user-icon {
+      color: black;
+      font-size: 24px;
+      margin-bottom: 0;
+      margin-top: 0;
+    }
+    /* Date & Time container bottom border */
+    #top-date-time-container {
+      border-bottom: 1px solid white;
+      padding-bottom: 0.25rem;
+      margin-bottom: 1rem;
+    }
+    /* divt-l row background colors based on time */
+    #divt-l tbody tr {
+      transition: background-color 0.3s ease;
+    }
+    #divt-l tbody tr.bg-time-1 {
+      background-color: #e0f2fe; /* light blue-100 */
+    }
+    #divt-l tbody tr.bg-time-2 {
+      background-color: #bae6fd; /* light blue-200 */
+    }
+    #divt-l tbody tr.bg-time-3 {
+      background-color: #7dd3fc; /* light blue-300 */
+    }
+    #divt-l tbody tr.bg-time-4 {
+      background-color: #38bdf8; /* light blue-400 */
+    }
+    #divt-l tbody tr.bg-time-5 {
+      background-color: #0ea5e9; /* light blue-500 */
+    }
+    #divt-l tbody tr.bg-time-6 {
+      background-color: #0284c7; /* light blue-600 */
+      color: white;
+    }
+    #divt-l tbody tr.bg-time-7 {
+      background-color: #0369a1; /* light blue-700 */
+      color: white;
+    }
+    #divt-l tbody tr.bg-time-8 {
+      background-color: #075985; /* light blue-800 */
+      color: white;
+    }
+    #divt-l tbody tr.bg-time-9 {
+      background-color: #0c4a6e; /* light blue-900 */
+      color: white;
+    }
+    #divt-l tbody tr.bg-time-offperiod-exceed {
+      background-color: #fee2e2 !important; /* light red-200 */
+      color: #991b1b !important; /* red-800 */
+      font-weight: 700;
+    }
+    /* divt-l height update */
+    #divt-l {
+      height: 430px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    /* divm-l table styling updated */
+    #divm-l-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border: 1px solid black;
+      border-radius: 0 !important;
+      overflow: hidden;
+      font-weight: 600;
+      color: #1f2937; /* gray-800 */
+      margin: 0 auto;
+      text-align: center;
+    }
+    #divm-l-table td {
+      border: 1px solid black;
+      padding: 0.5rem 0.75rem;
+      text-align: center;
+      vertical-align: middle;
+      font-weight: 600;
+    }
+    #divm-l-table td:first-child {
+      width: 50%;
+      font-weight: 700;
+      background-color: #f9fafb; /* gray-50 */
+      text-align: center;
+    }
+    /* divm-r padding */
+    #divm-r {
+      padding: 0.75rem; /* 12px */
+    }
+    /* divm-r button bar */
+    #divm-r .button-bar {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    #divm-r .button-bar button {
+      border: 1px solid black;
+      background: transparent;
+      color: black;
+      padding: 0.375rem 0.75rem;
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      border-radius: 0;
+      transition: font-weight 0.2s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    #divm-r .button-bar button:hover {
+      font-weight: 700;
+    }
+    /* Notification top left */
+    #notification {
+      top: 1rem;
+      left: 1rem;
+      right: auto;
+      background-color: #7FFFD4;
+      color: black;
+      font-weight: 700;
+      z-index: 9999;
+      max-width: 320px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      position: fixed;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      user-select: none;
+    }
+    #notification.opacity-100 {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    /* Editable table cells */
+    #divm-r tbody td[contenteditable="true"] {
+      background-color: #fef3c7; /* yellow-100 */
+      outline: 2px solid #fbbf24; /* yellow-400 */
+      cursor: text;
+      white-space: nowrap;
+    }
+    /* Right side div content update */
+    #under-divt-r-rightside {
+      height: 50px !important;
+      width: 100% !important;
+      border-radius: 0 !important;
+      margin-top: 0.75rem;
+      box-sizing: border-box;
+      /*background-color: #0ea5e9;*/
+      color: #1f2937;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      padding-left: 0.5rem;
+      user-select: none;
+      gap: 0.5rem;
+      border: 1px solid #fff; /* <-- add this line for 1px white border */
+    }
+    /* Right side div buttons */
+    #under-divt-r-rightside button {
+      border: 1px solid black;
+      background-color: whitesmoke;
+      border-radius: 0 !important;
+      padding: 0.25rem 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease;
+    }
+    #under-divt-r-rightside button:hover {
+      background-color: #e5e5e5;
+    }
+    /* Scroll for work-table body */
+    #divm-r > div.overflow-auto {
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    /* Table header sticky */
+    #work-table thead th {
+      position: sticky;
+      top: 0;
+      background-color: black;
+      color: white;
+      z-index: 10;
+    }
+    /* Cool custom radio button design */
+    .custom-radio {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 600;
+      padding-left: 2rem;
+      margin-right: 1.5rem;
+      user-select: none;
+    }
+    .custom-radio input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+    .custom-radio .checkmark {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 1.25rem;
+      width: 1.25rem;
+      background: linear-gradient(135deg, #2563eb 60%, #60a5fa 100%);
+      border-radius: 50%;
+      border: 2px solid #2563eb;
+      transition: box-shadow 0.2s;
+      box-shadow: 0 2px 8px 0 rgba(37,99,235,0.15);
+    }
+    .custom-radio input[type="radio"]:checked ~ .checkmark {
+      box-shadow: 0 0 0 4px #2563eb33;
+    }
+    .custom-radio .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+    .custom-radio input[type="radio"]:checked ~ .checkmark:after {
+      display: block;
+    }
+    .custom-radio .checkmark:after {
+      left: 0.19rem;
+      top: 0.25rem;
+      width: 0.65rem;
+      height: 0.50rem;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 4px #2563eb88;
+      content: "";
+      position: absolute;
+    }
+    .custom-radio span {
+      margin-left: 0.5rem;
+      color: #2563eb;
+      font-size: 1rem;
+      letter-spacing: 0.01em;
+      transition: color 0.2s;
+    }
+    .custom-radio input[type="radio"]:checked ~ span {
+      color: #1e293b;
+      font-weight: 700;
+    }
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      #divm-r .button-bar {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700 min-h-screen flex flex-col items-center relative">
+
+  <!-- Blue ribbon on left -->
+  <div class="ribbon" aria-hidden="true" aria-label="Page left blue ribbon with user icon">
+    <i class="fas fa-user ribbon-user-icon" aria-hidden="true" title="User Icon"></i>
+  </div>
+
+  <!-- Notification container top left -->
+  <div id="notification" aria-live="polite" role="alert"></div>
+
+  <div class="flex flex-1 w-full max-w-7xl mt-6 px-4 sm:px-6 flex-col sm:flex-row relative">
+    <!-- Main content area: Two columns -->
+    <main class="flex-1 flex flex-row gap-8 mt-6 sm:mt-0"><!-- gap-8 adds space between columns -->
+      <!-- LEFT COLUMN (30%) -->
+      <div class="flex flex-col w-full sm:w-[30%]">
+        <!-- Top: divt-l -->
+        <div id="divt-l" class="bg-white/90 rounded-box border border-gray-300 p-6 flex flex-col justify-between relative z-10 overflow-y-auto">
+          <table class="w-full max-w-xs text-center" aria-label="Activity times">
+            <tbody>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">Break</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-break">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">AAT 201</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-aat-201">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">BL3 - Law</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-bl3">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">BL4 - BS & Econ</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-bl4">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">BL7 - Tax</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-bl7">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">Accounts - Lasantha</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-accounts">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">BS - Pushpakumara</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-bs">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">ICT - Pubudu</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-ict">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">BL5 - Auditing</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-bl5">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">BL6 - MAC</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-bl6">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">BL8 - BIT</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-bl8">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">CS02</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-cs02">00:00:00</td>
+              </tr>
+              <tr>
+                <td class="px-2 py-1 font-semibold text-left">IT01</td>
+                <td class="px-2 py-1 tabular-nums font-semibold" data-time="00:00:00" id="time-it01">00:00:00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Under: divm-l -->
+        <div id="divm-l" class="h-[250px] flex flex-col items-center justify-center relative z-10 p-4">
+          <table id="divm-l-table" aria-label="Summary table">
+            <tbody>
+              <tr>
+                <td>Total Studies</td>
+                <td id="total-studies-time">00:00:00</td>
+              </tr>
+              <tr>
+                <td>Total Breaks</td>
+                <td id="total-breaks-time">00:00:00</td>
+              </tr>
+              <tr>
+                <td>Total Off-periods</td>
+                <td id="total-offperiods-time">00:00:00</td>
+              </tr>
+              <tr>
+                <td>Current Time</td>
+                <td id="current-time-display">00:00:00</td>
+              </tr>
+              <tr>
+                <td>End Day in</td>
+                <td id="end-day-in-display">24:00:00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- RIGHT COLUMN (65%) -->
+      <div class="flex flex-col w-full sm:w-[65%]">
+        <!-- Top: under-divt-r-rightside -->
+        <div id="under-divt-r-rightside" role="region" aria-label="Right side controls" style="margin-bottom:30px;">
+          <button type="button" aria-label="Chart" title="Chart">Chart</button>
+        </div>
+        <!-- Under: divt-r -->
+        <div id="divt-r" class="h-[200px] rounded-box border border-gray-300 p-4 flex flex-col justify-between text-gray-800 font-semibold bg-white/90 shadow-md cursor-pointer select-none relative z-10" tabindex="0" role="button" aria-pressed="false" aria-label="Save work entry" style="margin-bottom:30px;">
+          <!-- Work and dropdown -->
+          <div class="flex items-center gap-2 mb-3 text-base font-semibold w-full">
+            <label for="subject-select" class="whitespace-nowrap select-none">Work :</label>
+            <select
+              id="subject-select"
+              class="flex-1 rounded border border-gray-400 bg-white text-gray-900 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Select work"
+            >
+              <option>Break</option>
+              <option>AAT 201</option>
+              <option>BL3 - Law</option>
+              <option>BL4 - BS & Econ</option>
+              <option>BL7 - Tax</option>
+              <option>Accounts - Lasantha</option>
+              <option>BS - Pushpakumara</option>
+              <option>ICT - Pubudu</option>
+              <option>BL5 - Auditing</option>
+              <option>BL6 - MAC</option>
+              <option>BL8 - BIT</option>
+              <option>CS02</option>
+              <option>IT01</option>
+            </select>
+          </div>
+
+          <!-- Radio buttons -->
+          <div class="flex gap-6 mb-3 text-gray-900 font-semibold w-full" role="radiogroup" aria-label="Select start or end time">
+            <label class="custom-radio">
+              <input type="radio" name="time-type" value="Start" class="form-radio" aria-checked="false" />
+              <span class="checkmark"></span>
+              <span>Start</span>
+            </label>
+            <label class="custom-radio">
+              <input type="radio" name="time-type" value="End" class="form-radio" aria-checked="false" />
+              <span class="checkmark"></span>
+              <span>End</span>
+            </label>
+          </div>
+
+          <!-- Save button -->
+          <button
+            id="save-btn"
+            type="button"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition-colors duration-200 shadow-md flex items-center justify-center gap-2"
+            aria-label="Save work entry"
+          >
+            <i class="fas fa-save" aria-hidden="true"></i> Save
+          </button>
+        </div>
+        <!-- Under: divm-r -->
+        <div id="divm-r" class="h-[550px] bg-white/90 rounded-box border border-gray-300 p-3 overflow-hidden relative z-10 flex flex-col">
+          <div class="button-bar" role="toolbar" aria-label="Table actions">
+            <button type="button" aria-label="Edit" title="Edit" id="btn-edit">
+              <i class="fas fa-edit" aria-hidden="true"></i> Edit
+            </button>
+            <button type="button" aria-label="Save" title="Save" id="btn-save">
+              <i class="fas fa-save" aria-hidden="true"></i> Save
+            </button>
+            <button type="button" aria-label="Download" title="Download" id="btn-download">
+              <i class="fas fa-download" aria-hidden="true"></i> Download
+            </button>
+            <button type="button" aria-label="Clear" title="Clear" id="btn-clear">
+              <i class="fas fa-trash-alt" aria-hidden="true"></i> Clear
+            </button>
+          </div>
+          <table id="work-table" class="min-w-full border-collapse text-gray-800" aria-label="Work entries table header">
+            <thead>
+              <tr>
+                <th class="px-4 py-2 text-left">#</th>
+                <th class="px-4 py-2 text-left">Date</th>
+                <th class="px-4 py-2 text-left">Time</th>
+                <th class="px-4 py-2 text-left">Work</th>
+                <th class="px-4 py-2 text-left">Status</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="overflow-auto flex-1" role="region" aria-live="polite" aria-label="Work entries table body">
+            <table class="min-w-full border-collapse text-gray-800" aria-label="Work entries table body">
+              <tbody>
+                <!-- Initially empty -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const dateEl = document.getElementById('top-today-date');
+    const timeEl = document.getElementById('top-current-time');
+    const saveBtn = document.getElementById('save-btn');
+    const workSelect = document.getElementById('subject-select');
+    const radioButtons = document.getElementsByName('time-type');
+    const tableBodyContainer = document.querySelector('#divm-r > div.overflow-auto');
+    const tableBody = tableBodyContainer.querySelector('tbody');
+    const notificationEl = document.getElementById('notification');
+    const divtL = document.getElementById('divt-l');
+
+    // Summary cells
+    const totalStudiesCell = document.getElementById('total-studies-time');
+    const totalBreaksCell = document.getElementById('total-breaks-time');
+    const totalOffPeriodsCell = document.getElementById('total-offperiods-time');
+    const currentTimeDisplay = document.getElementById('current-time-display');
+    const endDayInDisplay = document.getElementById('end-day-in-display');
+
+    // Create and insert top date and time display above the main content
+    const topDateTimeContainer = document.createElement('div');
+    topDateTimeContainer.id = 'top-date-time-container';
+    topDateTimeContainer.className = 'w-full max-w-7xl px-4 sm:px-6 mt-4 text-white flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-1 sm:space-y-0 border-b border-white pb-1 mb-4';
+    const dateSpan = document.createElement('span');
+    dateSpan.id = 'top-today-date';
+    dateSpan.className = 'text-lg font-semibold';
+    const timeSpan = document.createElement('span');
+    timeSpan.id = 'top-current-time';
+    timeSpan.className = 'text-lg font-mono font-semibold';
+    topDateTimeContainer.appendChild(dateSpan);
+    topDateTimeContainer.appendChild(timeSpan);
+    document.body.insertBefore(topDateTimeContainer, document.querySelector('div.flex.flex-1'));
+
+    // Update top date and time every second
+    function updateTopDateTime() {
+      const now = new Date();
+
+      // Format date as e.g. Monday, June 10, 2024
+      const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = now.toLocaleDateString(undefined, optionsDate);
+
+      // Format time as e.g. 14:05:09
+      const optionsTime = { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      const formattedTime = now.toLocaleTimeString(undefined, optionsTime);
+
+      dateSpan.textContent = formattedDate;
+      timeSpan.textContent = formattedTime;
+
+      // Update Current Time display in divm-l table
+      currentTimeDisplay.textContent = formattedTime;
+
+      // Calculate End Day in = 24:00:00 - current time
+      const secondsNow = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const secondsInDay = 24 * 3600;
+      let secondsLeft = secondsInDay - secondsNow;
+      if (secondsLeft < 0) secondsLeft = 0;
+
+      endDayInDisplay.textContent = formatTime(secondsLeft);
+
+      // Update Total Off-periods in divm-l table
+      updateTotalOffPeriods(secondsNow);
+    }
+    updateTopDateTime();
+    setInterval(updateTopDateTime, 1000);
+
+    // Show notification function (top-left)
+    let notificationTimeout;
+    function showNotification(message, isError = false) {
+      clearTimeout(notificationTimeout);
+      notificationEl.textContent = message;
+      notificationEl.style.backgroundColor = isError ? '#f87171' : '#7FFFD4';
+      notificationEl.style.color = 'black';
+      notificationEl.classList.add('opacity-100');
+      
+      notificationTimeout = setTimeout(() => {
+        notificationEl.classList.remove('opacity-100');
+      }, 3000);
+    }
+
+    // Get selected radio value or null
+    function getSelectedRadioValue() {
+      for (const rb of radioButtons) {
+        if (rb.checked) return rb.value;
+      }
+      return null;
+    }
+
+    // Update row numbers in table body
+    function updateRowNumbers() {
+      const rows = tableBody.querySelectorAll('tr');
+      rows.forEach((row, index) => {
+        const firstCell = row.querySelector('td');
+        if (firstCell) {
+          firstCell.textContent = index + 1;
+        }
+      });
+    }
+
+    // Helper function to format seconds as HH:MM:SS
+    function formatTime(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      return [
+        hours.toString().padStart(2, '0'),
+        minutes.toString().padStart(2, '0'),
+        seconds.toString().padStart(2, '0')
+      ].join(':');
+    }
+
+    // Parse HH:MM:SS string to seconds
+    function parseTimeToSeconds(timeStr) {
+      const [h, m, s] = timeStr.split(':').map(Number);
+      return h * 3600 + m * 60 + s;
+    }
+
+    // Function to calculate time differences between Start and End entries
+    function calculateActivityTimes() {
+      // Initialize all times to 0
+      const activityTimes = {
+        'Break': 0,
+        'AAT 201': 0,
+        'BL3 - Law': 0,
+        'BL4 - BS & Econ': 0,
+        'BL7 - Tax': 0,
+        'Accounts - Lasantha': 0,
+        'BS - Pushpakumara': 0,
+        'ICT - Pubudu': 0,
+        'BL5 - Auditing': 0,
+        'BL6 - MAC': 0,
+        'BL8 - BIT': 0,
+        'CS02': 0,
+        'IT01': 0
+      };
+
+      // Get all table rows
+      const rows = tableBody.querySelectorAll('tr');
+      
+      // Temporary storage for start times
+      const startTimes = {};
+      
+      // Process each row
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 5) {
+          const work = cells[3].textContent;
+          const status = cells[4].textContent;
+          const timeStr = cells[2].textContent;
+          
+          // Parse time (format: HH:MM:SS)
+          const timeInSeconds = parseTimeToSeconds(timeStr);
+          
+          if (status === 'Start') {
+            startTimes[work] = timeInSeconds;
+          } else if (status === 'End' && startTimes[work] !== undefined) {
+            const duration = timeInSeconds - startTimes[work];
+            if (duration > 0) {
+              activityTimes[work] = (activityTimes[work] || 0) + duration;
+            }
+            delete startTimes[work];
+          }
+        }
+      });
+
+      // Update the display for each activity in divt-l table
+      const rowsDivtL = divtL.querySelectorAll('tbody tr');
+      Object.entries(activityTimes).forEach(([activity, seconds]) => {
+        const formattedTime = formatTime(seconds);
+        // Find row index by matching first cell text
+        let rowIndex = -1;
+        rowsDivtL.forEach((row, idx) => {
+          const label = row.children[0].textContent.trim();
+          if (label === activity) {
+            rowIndex = idx;
+          }
+        });
+        if (rowIndex >= 0) {
+          const row = rowsDivtL[rowIndex];
+          const timeCell = row.children[1];
+          timeCell.textContent = formattedTime;
+          timeCell.setAttribute('data-time', formattedTime);
+          
+          // Remove all bg-time-* classes and offperiod-exceed class
+          row.className = row.className.split(' ').filter(cls => !cls.startsWith('bg-time-') && cls !== 'bg-time-offperiod-exceed').join(' ');
+          
+          // Apply background color based on thresholds
+          const thresholds = [0, 3600, 7200, 10800, 14400, 18000, 21600, 25200, 28800];
+          let bgClass = '';
+          for (let i = thresholds.length - 1; i >= 0; i--) {
+            if (seconds > thresholds[i]) {
+              bgClass = 'bg-time-' + (i + 1);
+              break;
+            }
+          }
+          if (bgClass) {
+            row.classList.add(bgClass);
+          }
+        }
+      });
+
+      // Update divm-l summary table
+      // Total Studies = sum of all except Break
+      const studiesActivities = Object.keys(activityTimes).filter(a => a !== 'Break');
+      let totalStudiesSeconds = 0;
+      for (const act of studiesActivities) {
+        totalStudiesSeconds += activityTimes[act] || 0;
+      }
+      totalStudiesCell.textContent = formatTime(totalStudiesSeconds);
+      totalBreaksCell.textContent = formatTime(activityTimes['Break'] || 0);
+
+      // Update Total Off-periods = Current Time - (Total Breaks + Total Studies)
+      const now = new Date();
+      const secondsNow = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      updateTotalOffPeriods(secondsNow);
+    }
+
+    // Update Total Off-periods in divm-l table
+    function updateTotalOffPeriods(secondsNow) {
+      const breaksStr = totalBreaksCell.textContent;
+      const studiesStr = totalStudiesCell.textContent;
+
+      const breaksSeconds = parseTimeToSeconds(breaksStr);
+      const studiesSeconds = parseTimeToSeconds(studiesStr);
+
+      let offPeriodsSeconds = secondsNow - (breaksSeconds + studiesSeconds);
+      if (offPeriodsSeconds < 0) offPeriodsSeconds = 0;
+
+      totalOffPeriodsCell.textContent = formatTime(offPeriodsSeconds);
+
+      // Highlight if off-period exceeds 9 hours (32400 seconds)
+      if (offPeriodsSeconds > 32400) {
+        totalOffPeriodsCell.parentElement.classList.add('bg-time-offperiod-exceed');
+      } else {
+        totalOffPeriodsCell.parentElement.classList.remove('bg-time-offperiod-exceed');
+      }
+    }
+
+    // Save button click handler
+    saveBtn.addEventListener('click', () => {
+      const selectedRadio = getSelectedRadioValue();
+      if (!selectedRadio) {
+        showNotification("Please Select Start or Stop", true);
+        return;
+      }
+
+      // Get current date and time from top div
+      const dateText = dateSpan.textContent;
+      const timeText = timeSpan.textContent;
+      const workText = workSelect.value;
+
+      // Create new row and cells
+      const tr = document.createElement('tr');
+      tr.className = tableBody.children.length % 2 === 0 ? 'bg-blue-50' : 'bg-white';
+
+      // # column (will be updated after append)
+      const tdIndex = document.createElement('td');
+      tdIndex.className = 'px-4 py-2';
+      tdIndex.textContent = ''; // placeholder
+
+      const tdDate = document.createElement('td');
+      tdDate.className = 'px-4 py-2';
+      tdDate.textContent = dateText;
+
+      const tdTime = document.createElement('td');
+      tdTime.className = 'px-4 py-2 tabular-nums';
+      tdTime.textContent = timeText;
+
+      const tdWork = document.createElement('td');
+      tdWork.className = 'px-4 py-2';
+      tdWork.textContent = workText;
+
+      const tdStatus = document.createElement('td');
+      tdStatus.className = 'px-4 py-2';
+      tdStatus.textContent = selectedRadio;
+
+      tr.appendChild(tdIndex);
+      tr.appendChild(tdDate);
+      tr.appendChild(tdTime);
+      tr.appendChild(tdWork);
+      tr.appendChild(tdStatus);
+
+      tableBody.appendChild(tr);
+
+      updateRowNumbers();
+      calculateActivityTimes();
+      showNotification("Entry saved successfully!");
+      updateRadioSelectionBasedOnTable();
+    });
+
+    // Accessibility: allow Enter or Space on divt-r to trigger save
+    const divtR = document.getElementById('divt-r');
+    divtR.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        saveBtn.click();
+      }
+    });
+
+    // Function to update radio buttons based on dropdown and table data for that work
+    function updateRadioSelectionBasedOnTable() {
+      const selectedWork = workSelect.value;
+      // Find all rows with this work
+      const rows = Array.from(tableBody.querySelectorAll('tr'));
+      const workRows = rows.filter(row => {
+        const cells = row.querySelectorAll('td');
+        return cells.length >= 5 && cells[3].textContent === selectedWork;
+      });
+
+      // Check if last entry for this work is Start or End
+      if (workRows.length === 0) {
+        setRadioValue('Start');
+        return;
+      }
+
+      const lastRow = workRows[workRows.length - 1];
+      const lastStatus = lastRow.querySelectorAll('td')[4].textContent;
+
+      if (lastStatus === 'Start') {
+        setRadioValue('End');
+      } else {
+        setRadioValue('Start');
+      }
+    }
+
+    // Helper to set radio button value
+    function setRadioValue(value) {
+      for (const rb of radioButtons) {
+        if (rb.value === value) {
+          rb.checked = true;
+          rb.setAttribute('aria-checked', 'true');
+        } else {
+          rb.checked = false;
+          rb.setAttribute('aria-checked', 'false');
+        }
+      }
+    }
+
+    // Update radio buttons when dropdown changes
+    workSelect.addEventListener('change', () => {
+      updateRadioSelectionBasedOnTable();
+    });
+
+    // Initialize radio selection on page load
+    updateRadioSelectionBasedOnTable();
+
+    // Edit, Save, Download, Clear button handlers
+    const btnEdit = document.getElementById('btn-edit');
+    const btnSave = document.getElementById('btn-save');
+    const btnDownload = document.getElementById('btn-download');
+    const btnClear = document.getElementById('btn-clear');
+
+    let isEditing = false;
+    let originalTableData = [];
+
+    function saveOriginalTableData() {
+      originalTableData = [];
+      const rows = tableBody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = [];
+        cells.forEach(cell => {
+          rowData.push(cell.textContent);
+        });
+        originalTableData.push(rowData);
+      });
+    }
+
+    function restoreOriginalTableData() {
+      tableBody.innerHTML = '';
+      originalTableData.forEach(rowData => {
+        const tr = document.createElement('tr');
+        tr.className = tableBody.children.length % 2 === 0 ? 'bg-blue-50' : 'bg-white';
+        rowData.forEach(text => {
+          const td = document.createElement('td');
+          td.className = 'px-4 py-2';
+          td.textContent = text;
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      });
+      updateRowNumbers();
+      calculateActivityTimes();
+    }
+
+    btnEdit.addEventListener('click', () => {
+      if (isEditing) {
+        showNotification("Already in editing mode!");
+        return;
+      }
+      if (confirm("Need Editing?")) {
+        isEditing = true;
+        saveOriginalTableData();
+        // Make all cells except first (#) editable
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          for (let i = 1; i < cells.length; i++) {
+            cells[i].setAttribute('contenteditable', 'true');
+          }
+        });
+        showNotification("Editing is Enabled!");
+      }
+    });
+
+    btnSave.addEventListener('click', () => {
+      if (!isEditing) {
+        showNotification("Not in editing mode!");
+        return;
+      }
+      if (confirm("Save changes?")) {
+        // Save edited data
+        isEditing = false;
+        // Remove contenteditable attribute
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          for (let i = 1; i < cells.length; i++) {
+            cells[i].removeAttribute('contenteditable');
+          }
+        });
+        calculateActivityTimes();
+        showNotification("Table is Updated!");
+      } else {
+        // Cancel editing, restore original data
+        isEditing = false;
+        restoreOriginalTableData();
+        showNotification("Editing cancelled!");
+      }
+    });
+
+    btnDownload.addEventListener('click', () => {
+      const rows = tableBody.querySelectorAll('tr');
+      if (rows.length === 0) {
+        showNotification("Data is Empty!", true);
+        return;
+      }
+      
+      // Prepare CSV content
+      let csvContent = "data:text/csv;charset=utf-8,";
+      
+      // Add main header
+      csvContent += "Work Entries,,,,,,Activity Times,,,,,Summary\n";
+      
+      // Add column headers
+      csvContent += "#,Date,Time,Work,Status,,";
+      csvContent += "Activity,Time,,";
+      csvContent += "Summary,Value\n";
+      
+      // Get max row count between all tables
+      const workEntriesCount = rows.length;
+      const activityRows = divtL.querySelectorAll('tbody tr');
+      const activityCount = activityRows.length;
+      const summaryRows = document.querySelectorAll('#divm-l-table tbody tr');
+      const summaryCount = summaryRows.length;
+      const maxRows = Math.max(workEntriesCount, activityCount, summaryCount);
+      
+      // Process data row by row
+      for (let i = 0; i < maxRows; i++) {
+        // Work entries data (A-E columns)
+        if (i < workEntriesCount) {
+          const cells = rows[i].querySelectorAll('td');
+          for (let j = 0; j < cells.length; j++) {
+            let text = cells[j].textContent.replace(/"/g, '""');
+            if (text.includes(',') || text.includes('"')) {
+              text = `"${text}"`;
+            }
+            csvContent += text;
+            if (j < cells.length - 1) csvContent += ",";
+          }
+        } else {
+          csvContent += ",,,,,";
+        }
+        
+        // Empty column (F)
+        csvContent += ",";
+        
+        // Activity times data (H-I columns)
+        if (i < activityCount) {
+          const activityCells = activityRows[i].querySelectorAll('td');
+          for (let j = 0; j < activityCells.length; j++) {
+            let text = activityCells[j].textContent.replace(/"/g, '""');
+            if (text.includes(',') || text.includes('"')) {
+              text = `"${text}"`;
+            }
+            // Skip first empty column (G)
+            if (j === 0) csvContent += ",";
+            csvContent += text;
+            if (j < activityCells.length - 1) csvContent += ",";
+          }
+        } else {
+          csvContent += ",,,";
+        }
+        
+        // Empty column (J)
+        csvContent += ",";
+        
+        // Summary data (K-L columns)
+        if (i < summaryCount) {
+          const summaryCells = summaryRows[i].querySelectorAll('td');
+          for (let j = 0; j < summaryCells.length; j++) {
+            let text = summaryCells[j].textContent.replace(/"/g, '""');
+            if (text.includes(',') || text.includes('"')) {
+              text = `"${text}"`;
+            }
+            csvContent += text;
+            if (j < summaryCells.length - 1) csvContent += ",";
+          }
+        }
+        
+        // New line for next row
+        csvContent += "\n";
+      }
+      
+      // Create download link
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "work_tracker_" + new Date().toISOString().slice(0,10) + ".csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showNotification("Data downloaded successfully!");
+    });
+
+    btnClear.addEventListener('click', () => {
+      const rows = tableBody.querySelectorAll('tr');
+      if (rows.length === 0) {
+        showNotification("Data is Empty!", true);
+        return;
+      }
+      if (confirm("Clear all table data?")) {
+        tableBody.innerHTML = '';
+        calculateActivityTimes();
+        showNotification("Table is Cleared!");
+      }
+    });
+
+    // --- AUTO SAVE/LOAD TABLE DATA TO LOCAL STORAGE ---
+
+    // Key for localStorage
+    const STORAGE_KEY = 'workTableData';
+
+    // Save table data to localStorage
+    function saveTableDataToStorage() {
+      const rows = tableBody.querySelectorAll('tr');
+      const data = [];
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = [];
+        cells.forEach(cell => {
+          rowData.push(cell.textContent);
+        });
+        data.push(rowData);
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // Load table data from localStorage
+    function loadTableDataFromStorage() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        try {
+          const rows = JSON.parse(data);
+          tableBody.innerHTML = '';
+          rows.forEach(rowData => {
+            const tr = document.createElement('tr');
+            tr.className = tableBody.children.length % 2 === 0 ? 'bg-blue-50' : 'bg-white';
+            rowData.forEach(text => {
+              const td = document.createElement('td');
+              td.className = 'px-4 py-2';
+              td.textContent = text;
+              tr.appendChild(td);
+            });
+            tableBody.appendChild(tr);
+          });
+          updateRowNumbers();
+          calculateActivityTimes();
+        } catch (e) {
+          // If error, clear storage
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    }
+
+    // Save table data after every change
+    function autoSaveTable() {
+      saveTableDataToStorage();
+    }
+
+    // Hook auto-save to save, edit, clear, and save button events
+    saveBtn.addEventListener('click', autoSaveTable);
+    btnEdit.addEventListener('click', autoSaveTable);
+    btnSave.addEventListener('click', autoSaveTable);
+    btnClear.addEventListener('click', function() {
+      localStorage.removeItem(STORAGE_KEY);
+    });
+
+    // Also auto-save after table is edited (when editing is finished)
+    tableBody.addEventListener('input', autoSaveTable);
+
+    // Load table data on page load
+    loadTableDataFromStorage();
+  });
+</script>
+
+</body>
+</html>
